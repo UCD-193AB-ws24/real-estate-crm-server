@@ -1,0 +1,32 @@
+const express = require("express");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+require("dotenv").config();
+
+const sequelize = require("./src/config/database");
+const userRoutes = require("./src/routes/userRoutes");
+const leadRoutes = require("./src/routes/leadRoutes");
+
+const app = express();
+
+// Middleware
+app.use(cors());
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json({ limit: '50mb' }));
+
+// Routes
+app.use("/api/users", userRoutes);
+app.use("/api/leads", leadRoutes);
+
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, async () => {
+  try {
+    await sequelize.authenticate();
+    await sequelize.sync();
+    console.log("Database connected...");
+    console.log(`Server running on port ${PORT}`);
+  } catch (error) {
+    console.error("Database connection failed:", error);
+  }
+});
