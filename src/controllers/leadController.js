@@ -91,7 +91,7 @@ const updateLead = async (req, res) => {
 
       try {
         const { id } = req.params;
-        const { name, address, city, state, zip, owner, status, images } = req.body;
+        const { name, address, city, state, zip, owner, status, notes, images } = req.body;
 
         const lead = await Lead.findByPk(id);
         if (!lead) {
@@ -106,7 +106,8 @@ const updateLead = async (req, res) => {
         if (zip !== undefined) fieldsToUpdate.zip = zip;
         if (owner !== undefined) fieldsToUpdate.owner = owner;
         if (status !== undefined) fieldsToUpdate.status = status;
-        if (images !== undefined) fieldsToUpdate.images = lead.images ? [...images, ...lead.images].slice(0, 10) : images;
+        if (notes !== undefined) fieldsToUpdate.notes = notes;
+        if (images !== undefined) fieldsToUpdate.images = images;
 
         await Lead.update(fieldsToUpdate, { where: { id } });
         const updatedLead = await Lead.findByPk(id);
