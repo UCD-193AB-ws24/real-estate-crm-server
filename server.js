@@ -6,6 +6,7 @@ require("dotenv").config();
 const sequelize = require("./src/config/database");
 const userRoutes = require("./src/routes/userRoutes");
 const leadRoutes = require("./src/routes/leadRoutes");
+const statsRoutes = require("./src/routes/statsRoutes");
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use(express.json({ limit: '50mb' }));
 // Routes
 app.use("/api/users", userRoutes);
 app.use("/api/leads", leadRoutes);
+app.use("/api/stats", statsRoutes);
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, async () => {
