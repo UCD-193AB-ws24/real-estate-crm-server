@@ -27,7 +27,7 @@ app.use("/api/leads", leadRoutes);
 app.use("/api/stats", statsRoutes);
 
 const PORT = process.env.PORT || 5001;
-app.listen(PORT, async () => {
+app.listen(PORT, '0.0.0.0', async () => {
   try {
     await sequelize.authenticate();
     await sequelize.sync();
