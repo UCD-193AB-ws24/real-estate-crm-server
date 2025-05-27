@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { 
   getLeadsByUserId, 
+  getLeadsByEmail,
   createLead, 
   updateLead, 
   deleteLead 
@@ -15,7 +16,6 @@ router.use((req, res, next) => {
 router.get('/email/:email', getLeadsByEmail);
 router.post('/', createLead);
 router.put('/:id', updateLead);
-router.patch("/:id", updateLead);
 router.delete('/:id', deleteLead);
 
 
