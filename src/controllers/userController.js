@@ -2,9 +2,9 @@ const User = require("../models/User");
 
 const createOrUpdateUser = async (req, res) => {
   try {
-    const { id, name, email, picture } = req.body;
+    const { id: firebaseUid, name, email, picture } = req.body;
 
-    if (!id || !email) {
+    if (!firebaseUid || !email) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -14,17 +14,24 @@ const createOrUpdateUser = async (req, res) => {
     let user = await User.findOne({ where: { email } });
 
     if (user) {
-      console.log("🔁 Existing user found by email:", user.toJSON());
+      console.log("🔁 Existing user found:", user.toJSON());
 
-      // Optional: update their UID if needed
-      if (user.id !== id) {
-        console.log("🛠 Updating user ID to match Firebase UID");
-        user.id = id;
+      // 🔄 Update stored UID if it doesn't match Firebase's UID
+      if (user.id !== firebaseUid) {
+        console.log("🛠 Updating stored UID to match Firebase UID");
+        user.id = firebaseUid;
         await user.save();
       }
+
     } else {
-      // ❌ No user with this email: create a new one
-      user = await User.create({ id, name, email, picture });
+      // 🆕 No user with this email, create new user
+      user = await User.create({
+        id: firebaseUid,
+        name,
+        email,
+        picture,
+      });
+
       console.log("✅ New user created:", user.toJSON());
     }
 
@@ -37,4 +44,4 @@ const createOrUpdateUser = async (req, res) => {
 
 module.exports = {
   createOrUpdateUser
-}; 
+};
