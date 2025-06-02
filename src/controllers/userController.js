@@ -2,37 +2,46 @@ const User = require("../models/User");
 
 const createOrUpdateUser = async (req, res) => {
   try {
-    const { id, name, email, picture } = req.body;
+    const { id: firebaseUid, name, email, picture } = req.body;
 
-    if (!email) {
-      return res.status(400).json({ error: "Missing email field" });
+    if (!firebaseUid || !email) {
+      return res.status(400).json({ error: "Missing required fields" });
     }
 
     console.log("🔥 Received user:", req.body);
 
+    // ✅ Check if a user already exists by email
     let user = await User.findOne({ where: { email } });
 
-    if (!user) {
+    if (user) {
+      console.log("🔁 Existing user found:", user.toJSON());
+
+      // 🔄 Update stored UID if it doesn't match Firebase's UID
+      if (user.id !== firebaseUid) {
+        console.log("🛠 Updating stored UID to match Firebase UID");
+        user.id = firebaseUid;
+        await user.save();
+      }
+
+    } else {
+      // 🆕 No user with this email, create new user
       user = await User.create({
-        id: id || `custom_${Date.now()}`, // fallback if no ID passed
-        name: name || "Unnamed",
+        id: firebaseUid,
+        name,
         email,
         picture,
       });
-      console.log("✅ User created:", user.toJSON());
-    } else {
-      // Optionally update profile info (e.g., Google pic or name)
-      await user.update({ name: name || user.name, picture: picture || user.picture });
-      console.log("🔁 User updated:", user.toJSON());
+
+      console.log("✅ New user created:", user.toJSON());
     }
 
-    res.status(201).json(user);
+    return res.status(201).json(user);
   } catch (error) {
     console.error("❌ Error saving user:", error);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
 module.exports = {
-  createOrUpdateUser,
+  createOrUpdateUser
 };

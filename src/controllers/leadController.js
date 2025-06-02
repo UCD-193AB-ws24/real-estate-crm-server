@@ -1,4 +1,5 @@
 const Lead = require("../models/Lead");
+const User = require("../models/User");
 const multer = require('multer');
 const storage = multer.memoryStorage();
 const upload = multer({ 
@@ -9,6 +10,7 @@ const upload = multer({
   }
 });
 
+
 // Helper function to process images
 const processImages = async (files) => {
   if (!files || files.length === 0) return [];
@@ -18,6 +20,27 @@ const processImages = async (files) => {
     filename: file.originalname,
     mimetype: file.mimetype
   }));
+};
+
+const getLeadsByEmail = async (req, res) => {
+  try {
+    const { email } = req.params;
+
+    const user = await User.findOne({ where: { email: email.toLowerCase() } });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const leads = await Lead.findAll({
+      where: { userId: user.id },
+      attributes: ["name", "id", "address", "city", "state", "zip", "owner", "images", "status", "notes"],
+    });
+
+    res.json(leads);
+  } catch (error) {
+    console.error("Error fetching leads by email:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 };
 
 const getLeadsByUserId = async (req, res) => {
@@ -48,11 +71,20 @@ const createLead = async (req, res) => {
       }
 
       try {
-        const { name, address, city, state, zip, owner, status, notes, images, userId } = req.body;
-        console.log("req.body", req.body);
+        const { name, address, city, state, zip, owner, status, notes, images, userId, email } = req.body;
 
-        if (!address || !city || !state || !zip || !owner || !userId) {
+        if (!address || !city || !state || !zip || !owner || (!userId && !email)) {
           return res.status(400).json({ error: "Missing required fields" });
+        }
+
+        let finalUserId = userId;
+
+        if (!finalUserId && email) {
+          const userRecord = await require("../models/User").findOne({ where: { email: email.toLowerCase() } });
+          if (!userRecord) {
+            return res.status(404).json({ error: "No user found for provided email" });
+          }
+          finalUserId = userRecord.id;
         }
 
         const newLead = await Lead.create({ 
@@ -65,7 +97,7 @@ const createLead = async (req, res) => {
           images,
           notes,
           status: status || "Lead",
-          userId
+          userId: finalUserId
         });
 
         res.status(201).json(newLead);
@@ -143,5 +175,6 @@ module.exports = {
   getLeadsByUserId,
   createLead,
   updateLead,
-  deleteLead
-}; 
+  deleteLead,
+  getLeadsByEmail
+};
