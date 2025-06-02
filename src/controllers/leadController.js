@@ -51,7 +51,7 @@ const createLead = async (req, res) => {
         const { name, address, city, state, zip, owner, status, notes, images, userId } = req.body;
         console.log("req.body", req.body);
 
-        if (!address || !city || !state || !zip || !owner || !userId) {
+        if (!address || !city || !state || !zip || !userId) {
           return res.status(400).json({ error: "Missing required fields" });
         }
 
@@ -61,7 +61,7 @@ const createLead = async (req, res) => {
           city, 
           state, 
           zip, 
-          owner, 
+          owner: owner || null, 
           images,
           notes,
           status: status || "Lead",
