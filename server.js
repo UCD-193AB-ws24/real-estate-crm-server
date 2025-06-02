@@ -34,7 +34,7 @@ app.use("/api/stats", statsRoutes);
 app.use("/api/chat", chatRoutes);
 
 const PORT = process.env.PORT || 5001;
-app.listen(PORT, '0.0.0.0', async () => {
+app.listen(PORT, async () => {
   try {
     await sequelize.authenticate();
     await sequelize.sync();

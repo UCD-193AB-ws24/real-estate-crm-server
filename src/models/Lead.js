@@ -1,9 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 
-console.log("🔥 DB_URL:", process.env.DB_URL);
-
-
 const Lead = sequelize.define(
   "Lead",
   {
