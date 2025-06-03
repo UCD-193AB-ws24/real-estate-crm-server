@@ -16,13 +16,6 @@ const createOrUpdateUser = async (req, res) => {
     if (user) {
       console.log("🔁 Existing user found:", user.toJSON());
 
-      // 🔄 Update stored UID if it doesn't match Firebase's UID
-      if (user.id !== firebaseUid) {
-        console.log("🛠 Updating stored UID to match Firebase UID");
-        user.id = firebaseUid;
-        await user.save();
-      }
-
     } else {
       // 🆕 No user with this email, create new user
       user = await User.create({
@@ -42,6 +35,28 @@ const createOrUpdateUser = async (req, res) => {
   }
 };
 
+const getUserIdByEmail = async (req, res) => {
+  try {
+    const { email } = req.params;
+    
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const user = await User.findOne({ where: { email } });
+    
+    if (user) {
+      return res.status(200).json({ userId: user.id });
+    } else {
+      return res.status(200).json({ userId: -1 });
+    }
+  } catch (error) {
+    console.error("❌ Error finding user by email:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 module.exports = {
-  createOrUpdateUser
+  createOrUpdateUser,
+  getUserIdByEmail
 };
